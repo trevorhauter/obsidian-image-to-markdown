@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
+	"id": "obsidian-image-to-markdown",
+	"name": "Image to markdown",
+	"version": "0.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "Convert images to markdown with a simple keybind",
+	"author": "Trevor Hauter",
+	"authorUrl": "https://github.com/trevorhauter",
+	"fundingUrl": "https://github.com/trevorhauter",
+	"isDesktopOnly": true
 }
