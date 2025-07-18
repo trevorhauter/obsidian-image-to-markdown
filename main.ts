@@ -1,35 +1,47 @@
-import { EditorTransaction, Plugin, MarkdownView } from 'obsidian';
+import { EditorTransaction, Plugin, MarkdownView, Notice } from 'obsidian';
 import { createWorker } from 'tesseract.js';
+
+const VALID_MIME_TYPES = [
+	'image/heic',
+	'image/jpeg',
+	'image/png',
+	'image/webp',
+]
 
 export default class ObsidianImageToMarkdown extends Plugin {
 
-	async clipboardImageToMarkdown() {
-		const clipBoardItems = await navigator.clipboard.read();
-
-		let filePresent = false;
-
-		clipBoardItems.forEach(item => {
-			// TODO: Add better, more flexible validation
-			if (item.types.indexOf('image/png') > -1) {
-				filePresent = true;
+	// Retrieve the mime type of the image copied to clipboard if it exists
+	// If not, return null
+	getImageMimeType(clipboardItems: ClipboardItems): string | null {
+		for (const item of clipboardItems) {
+			for (const validMimeType of VALID_MIME_TYPES) {
+				if (item.types.indexOf(validMimeType) > -1) {
+					return validMimeType;
+				}
 			}
-		});
+		}
+		return null
+	}
 
+	async clipboardImageToMarkdown() {
+		const clipboardItems = await navigator.clipboard.read();
+		const imageMimeType = this.getImageMimeType(clipboardItems)
+		let output  = '';
 
-		let output = '' as string;
-		if( filePresent ) {
-			const blob = await clipBoardItems[0].getType('image/png');
-			const file = new File([blob], "obsidian-img.png");
+		if( imageMimeType ) {
+			new Notice('Converting copied image to markdown...');
+
+			const blob = await clipboardItems[0].getType(imageMimeType);
+			const file = new File([blob], 'obsidian-img');
 
 			const worker = await createWorker('eng');
 			const ret = await worker.recognize(file);
-			console.log(ret.data.text);
 			output = output.concat(ret.data.text);
 			await worker.terminate();
 
-
 		} else {
-			output = output.concat('file is not present');
+			// no valid image is currently copied to the users keyboard
+			new Notice('No valid image is currently copied to clipboard!');
 		}
 		
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
