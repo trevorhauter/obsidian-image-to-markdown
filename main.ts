@@ -1,8 +1,7 @@
 import { EditorTransaction, Plugin, MarkdownView } from 'obsidian';
+import { createWorker } from 'tesseract.js';
 
-// Remember to rename these classes and interfaces!
-
-export default class MyPlugin extends Plugin {
+export default class ObsidianImageToMarkdown extends Plugin {
 
 	async clipboardImageToMarkdown() {
 		const clipBoardItems = await navigator.clipboard.read();
@@ -19,23 +18,23 @@ export default class MyPlugin extends Plugin {
 
 		let output = '' as string;
 		if( filePresent ) {
-			output = output.concat('file is present');
+			const blob = await clipBoardItems[0].getType('image/png');
+			const file = new File([blob], "obsidian-img.png");
+
+			const worker = await createWorker('eng');
+			const ret = await worker.recognize(file);
+			console.log(ret.data.text);
+			output = output.concat(ret.data.text);
+			await worker.terminate();
+
+
 		} else {
 			output = output.concat('file is not present');
 		}
 		
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		// const clipboardText: ClipboardItems = await navigator.clipboard.read();
-		//
-		// clipboardText.forEach(
-		// 	(item) => {
-		// 		item.forEach(singleItem => {
-		// 			output.concat(singleItem);	
-		// 		});
-		// 	}
-		// )
-		//
-		// // Make sure the user is editing a Markdown file.
+		
+		// Make sure the user is editing a Markdown file.
 		if (view) {
 			const transaction: EditorTransaction = {
 				replaceSelection: output,
