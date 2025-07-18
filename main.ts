@@ -5,19 +5,37 @@ import { EditorTransaction, Plugin, MarkdownView } from 'obsidian';
 export default class MyPlugin extends Plugin {
 
 	async clipboardImageToMarkdown() {
-		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		const clipboardText: ClipboardItems = await navigator.clipboard.read();
-		const output = '';
+		const clipBoardItems = await navigator.clipboard.read();
 
-		clipboardText.forEach(
-			(item) => {
-				item.items.forEach(singleItem => {
-					output.concat(singleItem);	
-				});
+		let filePresent = false;
+
+		clipBoardItems.forEach(item => {
+			// TODO: Add better, more flexible validation
+			if (item.types.indexOf('image/png') > -1) {
+				filePresent = true;
 			}
-		)
+		});
 
-		// Make sure the user is editing a Markdown file.
+
+		let output = '' as string;
+		if( filePresent ) {
+			output = output.concat('file is present');
+		} else {
+			output = output.concat('file is not present');
+		}
+		
+		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+		// const clipboardText: ClipboardItems = await navigator.clipboard.read();
+		//
+		// clipboardText.forEach(
+		// 	(item) => {
+		// 		item.forEach(singleItem => {
+		// 			output.concat(singleItem);	
+		// 		});
+		// 	}
+		// )
+		//
+		// // Make sure the user is editing a Markdown file.
 		if (view) {
 			const transaction: EditorTransaction = {
 				replaceSelection: output,
